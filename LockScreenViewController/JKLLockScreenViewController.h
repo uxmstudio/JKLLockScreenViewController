@@ -43,7 +43,7 @@ typedef NS_ENUM(NSInteger, LockScreenMode) {
 
 @protocol JKLLockScreenViewControllerDataSource <NSObject>
 @required
-- (BOOL)lockScreenViewController:(JKLLockScreenViewController *)lockScreenViewController pincode:(NSString *)pincode;
+- (void)lockScreenViewController:(JKLLockScreenViewController *)lockScreenViewController pincode:(NSString *)pincode isValid:(void (^)(BOOL isValid))checkPin;
 @optional
 - (BOOL)allowTouchIDLockScreenViewController:(JKLLockScreenViewController *)lockScreenViewController;
 @end

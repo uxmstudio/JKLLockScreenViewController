@@ -26,6 +26,7 @@ static const NSTimeInterval LSVShakeAnimationDuration = 0.5f;
 @property (weak, nonatomic) IBOutlet UIButton * deleteButton;
 @property (strong, nonatomic) IBOutletCollection(JKLLockScreenNumber) NSArray *numberButtons;
 
+
 @property (nonatomic, weak) IBOutlet JKLLockScreenPincodeView * pincodeView;
 
 @end
@@ -142,15 +143,9 @@ static const NSTimeInterval LSVShakeAnimationDuration = 0.5f;
  @param  NSString PIN code
  @return BOOL 암호 유효성
  */
-- (BOOL)lsv_isPincodeValid:(NSString *)pincode {
+- (void)lsv_isPincodeValid:(NSString *)pincode completion:(void (^)(BOOL isValid))checkPin {
     
-    // [확인모드]일 경우, Confirm Pincode와 비교
-    if (_lockScreenMode == LockScreenModeVerification) {
-        return [_confirmPincode isEqualToString:pincode];
-    }
-    
-    // [신규모드], [변경모드]일 경우 기존 Pincode와 비교
-    return [_dataSource lockScreenViewController:self pincode:pincode];
+    [_dataSource lockScreenViewController:self pincode:pincode isValid:checkPin];
 }
 
 /**
@@ -168,11 +163,9 @@ static const NSTimeInterval LSVShakeAnimationDuration = 0.5f;
  @param NSString PIN code
  */
 - (void)lsv_unlockScreenSuccessful:(NSString *)pincode {
-    [self dismissViewControllerAnimated:NO completion:^{
-        if ([_delegate respondsToSelector:@selector(unlockWasSuccessfulLockScreenViewController:pincode:)]) {
-            [_delegate unlockWasSuccessfulLockScreenViewController:self pincode:pincode];
-        }
-    }];
+    if ([_delegate respondsToSelector:@selector(unlockWasSuccessfulLockScreenViewController:pincode:)]) {
+        [_delegate unlockWasSuccessfulLockScreenViewController:self pincode:pincode];
+    }
 }
 
 /**
@@ -307,23 +300,14 @@ static const NSTimeInterval LSVShakeAnimationDuration = 0.5f;
 - (void)lockScreenPincodeView:(JKLLockScreenPincodeView *)lockScreenPincodeView pincode:(NSString *)pincode {
     
     if (_lockScreenMode == LockScreenModeNormal) {
-        // [일반 모드]
-        if ([self lsv_isPincodeValid:pincode]) {
-            [self lsv_unlockScreenSuccessful:pincode];
-        }
-        else {
-            [self lsv_unlockScreenFailure];
-        }
-    } else if (_lockScreenMode == LockScreenModeVerification) {
-        // [확인 모드]
-        if ([self lsv_isPincodeValid:pincode]) {
-            [self setLockScreenMode:_prevLockScreenMode];
-            [self lsv_unlockScreenSuccessful:pincode];
-        }
-        else {
-            [self setLockScreenMode:_prevLockScreenMode];
-            [self lsv_unlockScreenFailure];
-        }
+        [self lsv_isPincodeValid:pincode completion:^(BOOL isValid) {
+            if (isValid) {
+                [self lsv_unlockScreenSuccessful:pincode];
+            }
+            else {
+                [self lsv_unlockScreenFailure];
+            }
+        }];
     }
     else {
         // [신규 모드], [변경 모드]
@@ -340,7 +324,7 @@ static const NSTimeInterval LSVShakeAnimationDuration = 0.5f;
     }
 }
 
-#pragma mark - 
+#pragma mark -
 #pragma mark LockScreenViewController Orientation
 - (BOOL)shouldAutorotate {
     return YES;
