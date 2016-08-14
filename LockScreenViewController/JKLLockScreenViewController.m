@@ -20,8 +20,6 @@ static const NSTimeInterval LSVShakeAnimationDuration = 0.5f;
     LockScreenMode _prevLockScreenMode;
 }
 
-@property (nonatomic, weak) IBOutlet UILabel  * titleLabel;
-@property (nonatomic, weak) IBOutlet UILabel  * subtitleLabel;
 @property (nonatomic, weak) IBOutlet UIButton * cancelButton;
 @property (weak, nonatomic) IBOutlet UIButton * deleteButton;
 @property (strong, nonatomic) IBOutletCollection(JKLLockScreenNumber) NSArray *numberButtons;
